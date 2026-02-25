@@ -27,4 +27,4 @@ In a set of rings with ```linephases``` from 0 to 1
 - their ```electrics.charge```s add up to zero
 
 1. Establish all mutual capacities with ```setMutualCapacities()```
-2. Apply potentials to the rings in such a way, all their ```electrics.charge```s add up to zero
+2. Apply potentials to the rings in such a way, all their ```electrics.charge```s add up to zero. As Q<sub>i</sub>=C<sub>i</sub>V<sub>i</sub> and C<sub>i</sub> is invariant, consequently all V<sub>i</sub> in the circuit result to zero. Thus all ring potentials can be chosen arbitrarily, but the last pick must neutralize the others.
