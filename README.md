@@ -22,10 +22,19 @@ This modifies its velocity and location.
 The electric field is generated in a series of rings as properties of class ```Ringtrain```.
 The method ```capacityOfRings()``` invoking ```Q2V()``` establishes the mutual relation between charge and potential ( = capacity) of neighbouring rings.
 
-#### Way to set ring-potentials and -charges
+#### rings
+A ```Ring``` in  ```Ringtrain``` has
+- (location) properties ```cx, cy, cz, linephase```, 
+- metric properties ```ringRadius, draadstraal```,
+- electrical properties ```potential, charge```.
+
+The ring's ```electrics.charge``` is thought to be split in N=24 point charges spread evenly over the rings circumference. N can be set globally.\ 
+For all x,y,z the ring's ```ringfield``` is the superposition of the E-fields of all N point charges.
+
+#### Ringtrain
 In a set of rings with ```linephases``` from 0 to 1
 - rings with linephases 0 and 1 are identical, to mimic a circular ringtrain
-- their ```electrics.charge```s add up to zero
+- their ```electrics.charge```s add up to zero (according to the law of charge conservation).
 
 ##### 1. Establish all mutual capacities with ```setMutualCapacities()```
 Iterate enough for the capacities to stabilise; \
