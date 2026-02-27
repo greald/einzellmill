@@ -27,12 +27,17 @@ In a set of rings with ```linephases``` from 0 to 1
 - rings with linephases 0 and 1 are identical, to mimic a circular ringtrain
 - their ```electrics.charge```s add up to zero
 
-1. Establish all mutual capacities with ```setMutualCapacities()``` \
+##### 1. Establish all mutual capacities with ```setMutualCapacities()```
 Iterate enough for the capacities to stabilise; \
 ```steps```=1000 does it for 3 rings spaced by 1 radius, and with precision of 4 digits.
-2. Apply potentials to the rings \
-in such a way, all their ```electrics.charge```s add up to zero. \
-As for every pair ```ring[i]``` and ```ring[j]```, Q<sub>ji</sub>+Q<sub>ij</sub>=C<sub>ij</sub>(V<sub>j</sub>-V<sub>i</sub>) \
-and C<sub>ij</sub> is invariant, \
-consequently all V in the circuit result to zero. \
-Thus *all but one of the ring potentials* can be chosen arbitrarily; *the last* pick must neutralize the others.
+
+##### 2. Apply potentials to the rings with .U2Q()
+in such a way,
+1. to close the loop, set the last ```ring``` of ```Ringtrain``` as identical to the first. \
+2. electrically, the rings are modelled as &#39;one of the plates of capacitors&#39; \
+in parallel connected to a point with a given potential. \
+Thus ```ring[1]``` has potential V<sub>1</sub>,  ..., ```ring[n]``` has potential V<sub>n</sub>. \
+Via capacitances C<sub>12</sub>, ..., C<sub>1n</sub> electrical charges Q<sub>12</sub>, ..., Q<sub>1n</sub> are built up: \
+Q<sub>12</sub> = C<sub>12</sub>(V<sub>2</sub> - V<sub>1</sub>)/2, ..., Q<sub>1n</sub> = C<sub>1n</sub>(V<sub>n</sub> - V<sub>1</sub>)/2. \
+(Factor 1/2 because ```ring```s represent only &#39;one plate of capacitors&#39;) \
+3. all their ```electrics.charge```s add up to zero. \
