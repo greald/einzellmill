@@ -49,10 +49,13 @@ Applying ```capacityOfRings()``` for all pairs of rings.
 ##### 2. Apply potentials to the rings with .U2Q()
 in such a way,
 1. to close the loop, set the last ```ring``` of ```Ringtrain``` as identical to the first.
-3. electrically, the rings are modelled as &#39;one of the plates of capacitors&#39;\
-in parallel connected to a point with a given potential.\
-Thus ```ring[1]``` has potential V<sub>1</sub>,  ..., ```ring[n]``` has potential V<sub>n</sub>.\
-Via capacitances C<sub>12</sub>, ..., C<sub>1n</sub> electrical charges Q<sub>12</sub>, ..., Q<sub>1n</sub> are built up:\
+3. electrically, the rings are modelled as points with given potentials: V<sub>i</sub>. Thus ```ring[1]``` has potential V<sub>1</sub>,  ..., ```ring[n]``` has potential V<sub>n</sub>.\
+These points all are connectect in parallel via capacitances C<sub>ij</sub> = C<sub>ji</sub>.\
+Mimic them as capacitors with two plates, charged with C<sub>ij</sub> &times; (V<sub>i</sub> - V<sub>j</sub>).\
+*Assume* both plates have opposite charge Q<sub>ij</sub> = 1/2 &times; C<sub>ij</sub> &times; (V<sub>i</sub> - V<sub>j</sub>) and Q<sub>ji</sub> =1/2 &times; C<sub>ji</sub> &times; (V<sub>j</sub> - V<sub>i</sub>).\
+Direction matters!\
+Then ```ring[i]``` will be charged in total with the sum of all Q<sub>ij</sub>.
+<!--Via capacitances C<sub>12</sub>, ..., C<sub>1n</sub> electrical charges Q<sub>12</sub>, ..., Q<sub>1n</sub> are built up:\
 Q<sub>12</sub> = C<sub>12</sub>(V<sub>2</sub> - V<sub>1</sub>)/2, ..., Q<sub>1n</sub> = C<sub>1n</sub>(V<sub>n</sub> - V<sub>1</sub>)/2.\
-(Factor 1/2 because ```ring```s represent only &#39;one plate of capacitors&#39;)
+(Factor 1/2 because ```ring```s represent only &#39;one plate of capacitors&#39;)-->
 5. Returns check whether all their ```electrics.charge```s add up to zero.
