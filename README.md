@@ -31,10 +31,14 @@ The ring's ```electrics.charge``` is thought to be split in N=24 point charges s
 For all x,y,z the ring's ```ringfield``` is the superposition of the E-fields of all N point charges.
 
 #### Capacities
-The method ```capacityOfRings()``` invoking ```.Q2V()``` establishes the mutual relation between charge and potential ( = capacity) of neighbouring rings.\
-Applying Laplace's specification of Poisson's rule:\
-∇²V=0 in empty space => ∇V = constant locally = -E by definition,\
-```.Q2V()``` sets the potential difference of rings from their charges. Retrieving their capacity.\
+The method ```capacityOfRings()``` invoking ```.Q2V()``` establishes the mutual relation between charge and potential ( = capacity) of neighbouring rings.
+- Applying <!--Laplace's specification of Poisson's rule:\
+∇²V=0 in empty space => ∇V = constant locally.\
+But just using -->∇V = -E by definition,
+- summing ```ringfield```s along the path\
+from x on first ring to the other and (y = ringRadius, z = 0)\
+- ```.Q2V()``` sets the potential difference of rings from their charges.
+- Then retrieves their capacity from C=Q/V.\
 Iterate enough for the capacities to stabilise;\
 ```steps```=1000 does it for 3 rings spaced by 1 radius, and with precision of 4 digits.
 
@@ -46,16 +50,15 @@ In a set of rings with ```linephases``` from 0 to 1
 ##### 1. Establish all mutual capacities with ```setMutualCapacities()```
 Applying ```capacityOfRings()``` for all pairs of rings.
 
-##### 2. Apply potentials to the rings with .U2Q()
-in such a way,
+##### 2. Charges from potentials with .U2Q()
 1. to close the loop, set the last ```ring``` of ```Ringtrain``` as identical to the first.
-3. electrically, the rings are modelled as points with given potentials: V<sub>i</sub>. Thus ```ring[1]``` has potential V<sub>1</sub>,  ..., ```ring[n]``` has potential V<sub>n</sub>.\
-These points all are connectect in parallel via capacitances C<sub>ij</sub> = C<sub>ji</sub>.\
-Mimic them as capacitors with two plates, charged with C<sub>ij</sub> &times; (V<sub>i</sub> - V<sub>j</sub>).\
-*Assume* both plates have opposite charge Q<sub>ij</sub> = 1/2 &times; C<sub>ij</sub> &times; (V<sub>i</sub> - V<sub>j</sub>) and Q<sub>ji</sub> =1/2 &times; C<sub>ji</sub> &times; (V<sub>j</sub> - V<sub>i</sub>).\
+2. electrically, the rings are modelled as nodes with *given potentials*: V<sub>i</sub>. Thus ```ring[1]``` has potential V<sub>1</sub>,  ..., ```ring[n]``` has potential V<sub>n</sub>.\
+These nodes all are connected via capacitances C<sub>ij</sub> = C<sub>ji</sub> in parallel.\
+Mimic them as capacitors with two plates, charged with C<sub>ij</sub> &times; (V<sub>i</sub> - V<sub>j</sub>).
+3. *Assume* both plates have half of the capacitor's charge, opposite to each other's:\
+Q<sub>ij</sub> = 1/2 &times; C<sub>ij</sub> &times; (V<sub>i</sub> - V<sub>j</sub>)\
+and\
+Q<sub>ji</sub> = 1/2 &times; C<sub>ji</sub> &times; (V<sub>j</sub> - V<sub>i</sub>).\
 Direction matters!\
 Then ```ring[i]``` will be charged in total with the sum of all Q<sub>ij</sub>.
-<!--Via capacitances C<sub>12</sub>, ..., C<sub>1n</sub> electrical charges Q<sub>12</sub>, ..., Q<sub>1n</sub> are built up:\
-Q<sub>12</sub> = C<sub>12</sub>(V<sub>2</sub> - V<sub>1</sub>)/2, ..., Q<sub>1n</sub> = C<sub>1n</sub>(V<sub>n</sub> - V<sub>1</sub>)/2.\
-(Factor 1/2 because ```ring```s represent only &#39;one plate of capacitors&#39;)-->
-5. Returns check whether all their ```electrics.charge```s add up to zero.
+4. Returns check whether all their ```electrics.charge```s add up to zero.
