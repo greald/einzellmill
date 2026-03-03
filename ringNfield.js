@@ -2,6 +2,37 @@
 // physical parameters in ISO units (m,kg,C)
 const epsilon0 = 8.854188e-12; // console.log(epsilon0);// F/m = C/Vm};
 
+// copy from https://ghvernuft.nl/os/tolerance.js
+if(typeof ca != "function") // "if ! function_exists(ca)" src 
+{
+	function ca( a, b, reference=[0,1] )
+	{
+		// return: true if a is close enough to b
+		// @param a, b Number
+		// @param reference range for magnitude of order
+		
+		let refmax = Number.MIN_VALUE;
+		let refmin = Number.MAX_VALUE;
+		for(let y=0; y<reference.length; y++)
+		{
+			refmax = Math.max(refmax, reference[y]);
+			refmin = Math.min(refmin, reference[y]);
+		}
+		
+		const tolerance = (refmax - refmin) * Number.EPSILON;
+		return tolerance > Math.abs( a - b );
+	}
+}
+if(typeof littleEnough != "function")
+{
+	function littleEnough( a, reference=[0,1] )
+	{
+		return ca(0, a, reference) ? 
+			(reference.sort(function(a, b){return b-a}))[0]  * Number.EPSILON : 
+			a ;
+	}
+}
+
 class Ring // (cx,cy,cz,linephase)
 {
 	// static electrical field of one ring
@@ -43,13 +74,9 @@ class Ring // (cx,cy,cz,linephase)
 		let riz = z - (this.cz + this.metrics.ringRadius * Math.sin( 2*Math.PI*sgm / this.ringsegments ));
 		
 		let sqhyp = rix**2 + riy**2 + riz**2;
-		// to avoid division by zero
-		const LITTLEENOUGH = Number.MIN_VALUE;
-		let hyp = 
-			sqhyp <= LITTLEENOUGH 
-			? LITTLEENOUGH 
-			: sqhyp**0.5;//Math.sqrt(sqhyp) ;
-
+		// to avoid division by zero; make hyp sure to be away from zero
+		let hyp = sqhyp <= Number.EPSILON ? Number.EPSILON : sqhyp**0.5;
+		
 		// contributed electric field strength
 		let Esgm = this.electrics.charge / this.ringsegments / sqhyp / ( 4 * Math.PI * epsilon0 );
 		// FINITE variable resgm
@@ -112,14 +139,12 @@ class Ringtrain // (rings)
 		{
 			let Ea = this.rings[rinx1].ringfield(dx, this.rings[rinx1].metrics.ringRadius, 0);
 			let Eb = this.rings[rinx2].ringfield(dx, this.rings[rinx2].metrics.ringRadius, 0);
+			
 			Ex = [Ea[0]+Eb[0], Ea[1]+Eb[1], Ea[2]+Eb[2]];
 			potx -= Ex[0]*step;
 			pot.push(potx);
 		}
-/*  console.log("charge "+rinx2+"-"+rinx1+" "+
-	    (this.rings[rinx2].electrics.charge   -   this.rings[rinx1].electrics.charge) +
-			" ");*/
-//    console.log("potential difference "+rinx2+"-"+rinx1+" "+ (potx - pot[0]).toPrecision(4));
+		
 		return potx - pot[0];
 	}
 	
@@ -142,7 +167,9 @@ class Ringtrain // (rings)
 //	console.log(JSON.stringify(this.rings));
 		
 		// dont divide by zero
-		return potdiff !== 0 ? charges/potdiff : undefined;
+		potdiff = ca(potdiff, 0, [0, charges]) ? charges*Number.EPSILON : potdiff;
+		return charges/potdiff;
+//	return potdiff !== 0 ? charges/potdiff : undefined;
 //	return potdiff**2 / Number.MAX_VALUE >0 ? charges/potdiff : undefined;
 	} 
 	
@@ -213,7 +240,7 @@ class Ringtrain // (rings)
 			totQ += this.rings[i].electrics.charge;
 		}
 		// quality checkup
-		return totQ +" / "+(maxQ-minQ)+" =?= ca 0";
+		return totQ;
 	}
 	
 	capOfRingWithNext(rinx1, rinx2) 
