@@ -40,7 +40,7 @@ from x on first ring to the other and (y = ringRadius, z = 0)\
 - ```.Q2V()``` sets the potential difference of rings from their charges.
 - Then retrieves their capacity from C=Q/V.\
 Iterate enough for the capacities to stabilise;\
-```steps```=1000 does it for 3 rings spaced by 1 radius, and with precision of 4 digits.
+Property ```precision``` = 1/1000 does it for 3 rings spaced by 1 radius, and with precision of 4 digits.
 
 #### Charges from potentials
 In a set of rings with ```linephases``` from 0 to 1
