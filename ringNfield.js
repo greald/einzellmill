@@ -34,10 +34,13 @@ if(typeof littleEnough != "function")
 }
 
 class Ring // (cx,cy,cz,linephase)
-{
-	// static electrical field of one ring
+{// static electrical field of one ring
+	
+	#NOMINALPOTENTIAL;
+	
 	constructor(cx,cy,cz, linephase)
 	{
+		this.#NOMINALPOTENTIAL = 30000; // V
 		// calculations
 		this.ringsegments = window.N >0 ? window.N : 24;
 		
@@ -50,10 +53,12 @@ class Ring // (cx,cy,cz,linephase)
 		
 		// electrics
 		this.electrics = {
-			toppotential: 30000*Math.sqrt(2), 
+			toppotential: 30000*Math.sqrt(2),
+			potential:0,
 			charge: Math.cos(2*Math.PI*this.linephase) * epsilon0 
 			}
 	}
+	static get TOPPOTENTIAL(){ return this.#NOMINALPOTENTIAL * Math.sqrt(2); }
 	
 	segmentfield(sgm, x,y,z)
 	{
@@ -118,10 +123,11 @@ class Ringtrain // (rings)
 		this.rings = cycle%1 == 0 ? rings : [];
 		
 		this.mutualCapacities = [];
+		this.precision = 1/10000;
 	}
 	
 	// Q2U(): given charges // return: potential difference from one ring to another (V)
-	Q2U(rinx1, rinx2, steps=10)
+	Q2U(rinx1, rinx2)
 	{
 		// path from rings this.rings[rinx1] and this.rings[rinx2] ...
 		// ... along x=dx, y=this.rings[rinx1].metrics.ringRadius, z=0
@@ -129,7 +135,8 @@ class Ringtrain // (rings)
 			this.rings[rinx2].cx - this.rings[rinx2].metrics.draadstraal -
 			this.rings[rinx1].cx + this.rings[rinx1].metrics.draadstraal;
 //	console.log("path "+rinx2+"-"+rinx1+" "+ path);
-		let step = path / steps;
+//	let step = path / steps;
+		const step = path * this.precision;
 		let Ex = [], potx = 0, pot = [potx];
 		
 		for(let 
@@ -147,9 +154,10 @@ class Ringtrain // (rings)
 		
 		return potx - pot[0];
 	}
-	
-	capacityOfRings(rinx1, rinx2, steps=10) // C=Q/V
+	// set the capacity for ring[rinx1] to ring[rinx2]
+	capacityOfRings(rinx1, rinx2) // C=Q/V
 	{
+		// @params rinx1, rinx2: indices of this.rings
 //	console.log(JSON.stringify(this.rings));
 		const oriloads = [this.rings[rinx1].electrics.charge, this.rings[rinx2].electrics.charge];
 		// Load test charges
@@ -157,7 +165,7 @@ class Ringtrain // (rings)
 		this.rings[rinx1].electrics.charge = -1;//epsilon0;
 //	console.log(JSON.stringify(this.rings));
 		
-		let potdiff = this.Q2U(rinx1, rinx2, steps);
+		let potdiff = this.Q2U(rinx1, rinx2);
 //	console.log(potdiff);
 		let charges = this.rings[rinx2].electrics.charge - this.rings[rinx1].electrics.charge;
 		
@@ -184,7 +192,7 @@ class Ringtrain // (rings)
 			}
 		}
 	}
-	setMutualCapacities(steps = 10000)
+	setMutualCapacities()
 	{
 		this.presetMutualCapacities();
 		for( let r1=0; r1<this.rings.length; r1++)
@@ -197,82 +205,81 @@ class Ringtrain // (rings)
 				}
 				else
 				{
-					this.mutualCapacities[r1][r2] = this.capacityOfRings(r1, r2, steps);
+					this.mutualCapacities[r1][r2] = this.capacityOfRings(r1, r2);
 					this.mutualCapacities[r2][r1] = this.mutualCapacities[r1][r2];
 				}
 			}
 		}
 		//console.log(this.mutualCapacities);
 	}
+	viewMutualCapacities() // service method
+	{
+		// return HTML table
+		if( Array.isArray(this.mutualCapacities)
+		&& this.mutualCapacities.length != this.rings.length)
+		{
+			this.setMutualCapacities();
+		}
+		
+		const uC = this.mutualCapacities[0][1];
+		if(uC < Number.EPSILON * 1e-12){ return "Error: division by zero";}
+		
+		let rows = "<tr><th>i&#92;j</th><th> 0 </th><th> 1 </th><th> 2 </th><th> 0 </th></tr>";
+		for( let row=0; row<this.mutualCapacities.length; row++)
+		{
+			rows += "<tr><th>"+row+"</th>";
+			for( let col=0; col<this.mutualCapacities[row].length; col++)
+			{
+				let cell = this.mutualCapacities[row][col]/uC;
+				cell = cell == 0 ? "": cell.toFixed(2);
+				rows += "<td>"+ cell +"</td>";//.toPrecision(3)
+			}
+			rows += "</tr>";
+		}
+		return "<table>"+"<caption>"+
+		"<h2>Capacity of rings[i][j]</h2>"+
+		"<h3>"+(uC*1e12).toPrecision(3)+" pF = 1"+"</h3>"+
+		"path = "+ (1/this.precision) +" steps"+
+		"</caption>"+rows+"</table>";
+	}	
 	
 	defaultpots()
 	{
 		let defpots = [];
 		for( let ri=0; ri<this.rings.length; ri++ )
 		{
-			defpots.push(this.rings[ri].electrics.toppotential * Math.cos(2*Math.PI*this.rings[ri].linephase) );
+			this.rings[ri].electrics.potential = 
+				this.rings[ri].electrics.toppotential * 
+				Math.cos(2*Math.PI*this.rings[ri].linephase);
+			
+			defpots.push(this.rings[ri].electrics.potential);
 		}
-		return defpots;
+  	console.log(defpots);
 	}
-	U2Q( pots = [])
+	U2Q( existingpotentials = false )
 	{
-		if(Array.isArray(pots) && pots.length==0){ pots = this.defaultpots();}
-		if( this.rings.length != pots.length ){let err="Error: invalid parameter pots"; console.log(err); alert(err); return;} 
-		if( pots[0] != pots.at(-1) ){let err="Error: last of pots != first"; console.log(err); alert(err); return;}
-		let err="Correct parameter pots. Move on."; console.log(err);// alert(err); //return;
+		if( existingpotentials == true ){}else{this.defaultpots();}
 		
-		// for quality checkup
-		let totQ = 0, minQ = Number.MAX_VALUE, maxQ=Number.MIN_VALUE;
+		// for validity checkup within loop
+		let totQ = 0; //, minQ = Number.MAX_VALUE, maxQ=Number.MIN_VALUE;
 		
-		for(let i=0; i<pots.length; i++)
+		for(let i=0; i<this.rings.length; i++)
 		{
 			this.rings[i].electrics.charge = 0;
-			for(let j=0; j<pots.length; j++)
+			for(let j=0; j<this.rings.length; j++)
 			{
 				let C = this.mutualCapacities[i][j]; // direction doesn't matter; C[i][j] = C[j][i] = C
-				// // direction matters for pots! +- goes from higher to lower index
-				this.rings[i].electrics.charge += C==null ? 0 : C/2*(pots[j]-pots[i]); 
+				// // direction matters for rings.electrics.potential! +- goes from higher to lower index
+				this.rings[i].electrics.charge += C==null 
+					? 0 
+					: C/2*( this.rings[j].electrics.potential-this.rings[i].electrics.potential ); 
 			}
-			
-			// for quality checkup
-			minQ = Math.min(this.rings[i].electrics.charge, minQ);
-			maxQ = Math.max(this.rings[i].electrics.charge, maxQ);
-			totQ += this.rings[i].electrics.charge;
+			// for validity checkup
+			totQ += this.rings[i].electrics.charge; // should be zero
 		}
-		// quality checkup
+		// vadidity checkup
 		return totQ;
 	}
-	
-	capOfRingWithNext(rinx1, rinx2) 
-	{
-		// Jeroen zegt: epsilon0 * pi * (R^2) / x
-		cap = epsilon0 * Math.PI * RingRadius**2 / ringAfstand;
-		return cap;
-	}
-	
-	// charge: given potentials and capacities
-	charge(potentials=[]) // @param potentials.length == this.rings.length; 
-	{
-		for(let r=0; r<this.rings.length; r++){ this.rings[r].electrics.charge=0; }
-		let devv = potentials[0] - potentials[potentials.length-1];
-		if( potentials.length == this.rings.length
-		&& Math.abs(devv)<.0001)
-		{} else { this.errors.push('system error: potentials don&#39;t match to rings!');}// return; }
-		
-		for( let v=0; v<potentials.length; v++ )
-		{
-			let vl = v==0 ? potentials.length-1 : v-1;
-			let vr = v<=potentials.length-1 ? 0 : v+1;
-			
-			let cap = this.capOfRingWithNext(0,1) ;
-//    console.log("operational capacity " + cap + " F" );
-			let potburen = potentials[vl] + potentials[vr];
-			
-			this.rings[v].electrics.charge = cap * ( potentials[v] - (potburen)/2 ); 
-//		console.log(this.rings[v].electrics.charge);
-		}
-	}
-	
 	superpose(X,Y,Z)
 	{
 		// @param X,Y,Z global coordinates of sample point
@@ -290,4 +297,17 @@ class Ringtrain // (rings)
 		}
 		return Efieldvector;
 	}
+	
+	run( X,Y )
+	{
+		if( ! (Array.isArray(this.mutualCapacities)
+		&& this.mutualCapacities.length == this.rings.length) )
+		{
+			this.setMutualCapacities();
+		}
+		this.U2Q();
+		return this.superpose(X,Y,0);
+	}
+	
+	pointField(X,Y){ return this.run( X,Y ); }
 }
