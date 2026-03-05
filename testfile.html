@@ -23,12 +23,11 @@
 			Z=0; assyfield(ringtrain, X,Y,0);
 			" -->
 		
+		<script src="https://ghvernuft.nl/os/tolerance.js"></script>
 		<script src="calibration.js" ></script>
 		<script src="ringNfield.js"></script>
 		<script src="grid.js"></script>
 		<script>
-//	console.log("ringCapacityISO " + Ring.capacity(ringRadius, ringAfstand, draadstraal) + " F");
-//	console.log("ringLadingTop " + ringLadingTop + " C");
 		
 		var ring0 = new Ring(0,             0,0, 0);    //console.log(ring0);
 		var ring1 = new Ring(  ringAfstand, 0,0, 1/3);  //console.log(ring1);
@@ -37,100 +36,14 @@
 		
 		var ringtrain = new Ringtrain([ring0,ring1,ring2,ring3]);
 		
-{		ringtrain.setMutualCapacities(); 
-		const uC = ringtrain.mutualCapacities[0][1];
-		let rows = "<tr><th>i&#92;j</th><th> 0 </th><th> 1 </th><th> 2 </th><th> 0 </th></tr>";
-		for( let row=0; row<ringtrain.mutualCapacities.length; row++)
-		{
-			rows += "<tr><th>"+row+"</th>";
-			for( let col=0; col<ringtrain.mutualCapacities[row].length; col++)
-			{
-				let cell = ringtrain.mutualCapacities[row][col]/uC;
-				cell = cell == 0 ? "": cell.toFixed(2);
-				rows += "<td>"+ cell +"</td>";//.toPrecision(3)
-			}
-			rows += "</tr>";
-		}
-		document.getElementById('cap').innerHTML = "<table>"+"<caption>"+
-		"<h2>Capacity of rings[i][j]</h2>"+
-		"<h3>"+(uC*1e12).toPrecision(3)+" pF = 1"+"</h3>"+
-		"</caption>"+rows+"</table>";
-
-/*		console.log(ringtrain.defaultpots());
-*/}				
-		console.log( "valid charges "+ ringtrain.U2Q([0,2,2,0]) ); 
+		document.getElementById('cap').innerHTML  = ringtrain.viewMutualCapacities(); 
 		
-/*		let traincharge = 0;
-		for(r=0; r<ringtrain.rings.length; r++){ traincharge += ringtrain.rings[r].electrics.charge; console.log("traincharge "+traincharge.toPrecision(4)); }*/
-		
-{		
-/*	// field within ring, along middellijn
-//	console.log(ring0);
-		let steps = 30;
-		let unR = ring0.metrics.ringRadius - 2*ring0.metrics.draadstraal;
-		let step = unR / steps;
-		let potential = -.11 + .002014 + .0001205; // 28.433; 
-		let avg = potential;
-		
-		let rows = "<tr><th> dr (/R) </th><th> field (V/m) </th><th> pot (V) </th><th> avg (V) </th></tr>"; 
-		for(let dr = -unR; dr< step; dr += step) // unR; dr += step)
-		{
-			let field = ring1.ringfield(0,dr,0)[1];
-			let row = "<tr>"+
-				"<td>"+ dr.toFixed(4) + "</td>" +
-				"<td>"+ field.toPrecision(4) + "</td>" +
-				"<td>"+ potential.toPrecision(4) + "</td>" +
-				"<td>"+ avg.toPrecision(4) + "</td>" +
-				"</tr>";
-//		console.log( row );
-			rows += row;
-			let potl = potential;
-			potential -= field*step;
-			
-			let potr = potential - ring1.ringfield(0,dr+step,0)[1]*step;
-			avg = (potl + potr)/2;
-//		console.log( field.toPrecision(4) + " :field , pot: " +potential.toPrecision(4) );
-		}
-		document.getElementById('cap').innerHTML += "veld ring langs doorsnede<table>" + rows + "</table>";
-//	let pots = ringtrain.Q2U(1,2);
-//	console.log(pots);
-  	console.log( ringtrain.capacityOfRings(0,1) );
-  	console.log( ringtrain.capacityOfRings(0,2) );
-  	console.log( ringtrain.capacityOfRings(0,3) );		
-		
-
-//	console.log( "ringcapaciteit "+ ringtrain.capOfRingWithNext(0,1) +" F" );
-//	console.log( "ringcapaciteit "+ ringtrain.capOfRingWithNext(0,2) +" F" );
-//	console.log( "ringcapaciteit "+ ringtrain.capOfRingWithNext(0,3) +" F" );
-		
-		let regels = []; let table = "<table><tr><th></th><th>(m)</th><th>capaciteit (F)</th><th>relatief</th><th>ruw (F)</th></tr>";
-		for(let r=1; r<ringtrain.rings.length; r++)
-		{
-			//let regels[r] = [r, ringtrain.rings[r].cx, ringtrain.capOfRingWithNext(0,r), ringtrain.capOfRingWithNext(0,r)/ringtrain.capOfRingWithNext(0,1)];
-			table += "<tr>"+
-			"<td>"+r+"</td>"+
-			"<td>"+ringtrain.rings[r].cx+"</td>"+
-			"<td>"+ringtrain.capOfRingWithNext(0,r).toPrecision(4)+"</td>"+
-			"<td>"+ (ringtrain.capOfRingWithNext(0,r)/ringtrain.capOfRingWithNext(0,1)).toPrecision(4) +"</td>"+
-			"<td>"+ ( 8.854188 * Math.pow(10, -12) * Math.PI * Math.pow(.03,2) / ringtrain.rings[r].cx ).toPrecision(4) +"</td>"+
-			"</tr>"
-		}
-		table += "</table>";
-		document.getElementById('cap').innerHTML += table;
-*/
-		
-/*		// iteratie van potentials, given capacities. 
-		var pots = [];
-		for( let p=0; p<ringtrain.rings.length; p++)
-		{
-			pots[p] = topSpanning * Math.sin(2*Math.PI*ringtrain.rings[p].linephase); 
-		}
-  	console.log(pots);
-		
-		var chargetrain = ringtrain.charge(pots);
-*/}
 		console.log(["ringtrain ", ringtrain]);
-		
+//	console.log( ringtrain.run(1.5*ringAfstand, 0.015/2) );
+		console.log( ringtrain.pointField(1.5*ringAfstand, 0.015/2) );
+				
+		var grid = new Grid();
+		console.log( grid.fillcells( [[1,2,3],[4,5,6]] ));
 	</script>
 	</body>
 </html>
