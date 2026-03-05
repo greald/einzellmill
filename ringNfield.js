@@ -123,7 +123,7 @@ class Ringtrain // (rings)
 		this.rings = cycle%1 == 0 ? rings : [];
 		
 		this.mutualCapacities = [];
-		this.precision = 1/10000;
+		this.precision = 1/1000;
 	}
 	
 	// Q2U(): given charges // return: potential difference from one ring to another (V)
@@ -311,3 +311,4 @@ class Ringtrain // (rings)
 	
 	pointField(X,Y){ return this.run( X,Y ); }
 }
+
