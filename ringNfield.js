@@ -126,19 +126,11 @@ class Ringtrain // (rings)
 		this.precision = 1/1000;
 	}
 	
-	// Q2U(): given charges // return: potential difference from one ring to another (V)
-	Q2U(rinx1, rinx2)
+	potFromIncrEds(rinx1, rinx2, step)
 	{
-		// path from rings this.rings[rinx1] and this.rings[rinx2] ...
-		// ... along x=dx, y=this.rings[rinx1].metrics.ringRadius, z=0
-		let path =
-			this.rings[rinx2].cx - this.rings[rinx2].metrics.draadstraal -
-			this.rings[rinx1].cx + this.rings[rinx1].metrics.draadstraal;
-//	console.log("path "+rinx2+"-"+rinx1+" "+ path);
-//	let step = path / steps;
-		const step = path * this.precision;
+		// sum E fields over incremental steps
+		// returns potentials for rings[rinx1] and rings[rinx2]
 		let Ex = [], potx = 0, pot = [potx];
-		
 		for(let 
 			dx = this.rings[rinx1].cx + this.rings[rinx1].metrics.draadstraal;
 			dx < this.rings[rinx2].cx - this.rings[rinx2].metrics.draadstraal;
@@ -149,11 +141,37 @@ class Ringtrain // (rings)
 			
 			Ex = [Ea[0]+Eb[0], Ea[1]+Eb[1], Ea[2]+Eb[2]];
 			potx -= Ex[0]*step;
-			pot.push(potx);
+			pot.push(potx);				
 		}
-		
-		return potx - pot[0];
+		return pot;
 	}
+	// Q2U(): given charges // return: potential difference from one ring to another (V)
+	Q2U(rinx1, rinx2)
+	{
+		// path from rings this.rings[rinx1] and this.rings[rinx2] ...
+		// ... along x=dx, y=this.rings[rinx1].metrics.ringRadius, z=0
+		let path =
+			(this.rings[rinx2].cx - this.rings[rinx2].metrics.draadstraal) -
+			(this.rings[rinx1].cx + this.rings[rinx1].metrics.draadstraal);
+			
+		let step = path / 3; // first raw approximation
+		let delta = this.precision * (1 + Number.EPSILON);
+		let potx = 0, pot = [potx], potdiff=0;
+		
+		while( delta > this.precision)
+		{
+			console.log("increments "+(path/step).toFixed(0));
+			
+			pot = this.potFromIncrEds(rinx1, rinx2, step);
+			
+			potx = pot.at(-1);
+			delta = Math.abs((potx - pot[0] - potdiff)/(potx - pot[0])); console.log("delta "+delta.toPrecision(4));
+			potdiff = potx - pot[0];
+			step = step / 2; // closer approximation
+		}
+		return potdiff;
+	}
+		
 	// set the capacity for ring[rinx1] to ring[rinx2]
 	capacityOfRings(rinx1, rinx2) // C=Q/V
 	{
@@ -210,6 +228,7 @@ class Ringtrain // (rings)
 				}
 			}
 		}
+		console.log("mutual capacities set");
 		//console.log(this.mutualCapacities);
 	}
 	viewMutualCapacities() // service method
@@ -311,4 +330,3 @@ class Ringtrain // (rings)
 	
 	pointField(X,Y){ return this.run( X,Y ); }
 }
-
