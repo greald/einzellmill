@@ -24,36 +24,36 @@ The electric field is generated in a series of rings as properties of class ```R
 #### Rings
 A ```Ring``` in  ```Ringtrain``` has
 - (location) properties ```cx, cy, cz, linephase```, 
-- metric properties ```ringRadius, draadstraal```,
-- electrical properties ```potential, charge```.
+- ```metrics``` properties ```ringRadius, draadstraal```,
+- ```electrics``` properties ```potential, charge```.
 
-The ring's ```electrics.charge``` is thought to be split in N=24 point charges spread evenly over the rings circumference. N can be set globally. \
-For all x,y,z the ring's ```ringfield``` is the superposition of the E-fields of all N point charges.
+The ring's ```electrics.charge``` is thought to be split in ```N```=24 point charges spread evenly over the rings circumference. ```N``` can be set globally. \
+For any x,y,z the ring's ```ringfield``` is the superposition of the E-fields of all of its ```N``` point charges.
 
 #### Capacities
-The method ```capacityOfRings()``` invoking ```.Q2V()``` establishes the mutual relation between charge and potential ( = capacity) of neighbouring rings.
+The method ```capacityOfRings()``` invoking ```.Q2U()``` invoking ```potFromIncrEds()``` establishes the mutual relation between charge and potential ( = capacity) of all rings in play:
 - Applying <!--Laplace's specification of Poisson's rule:\
 ∇²V=0 in empty space => ∇V = constant locally.\
 But just using -->∇V = -E by definition,
 - summing ```ringfield```s along the path\
-from x on first ring to the other and (y = ringRadius, z = 0)\
-- ```.Q2V()``` sets the potential difference of rings from their charges.
-- Then retrieves their capacity from C=Q/V.\
-Iterate enough for the capacities to stabilise;\
-Property ```precision``` = 1/1000 does it for 3 rings spaced by 1 radius, and with precision of 4 digits.
+from x on first ring to the other and (y = ringRadius, z = 0)
+- ```potFromIncrEds()``` sets the potential difference of rings from their given charges,
+- optimised dynamically to required ```precision``` in ```Q2U()```, while minimizing the number of iterations.
+- Then ```capacityOfRings()``` returns the capacity from C=Q/V for any pair of ```ring```s.
 
 #### Charges from potentials
-In a set of rings with ```linephases``` from 0 to 1
+In a set of rings with ```linephases``` from 0 to 1 (corresponding to 0 to 2&pi;)
 - rings with linephases 0 and 1 are identical, to mimic a circular ringtrain
-- their ```electrics.charge```s add up to zero (according to the law of charge conservation).
+- their ```electrics.charge```s add up to zero (according to the Conservation Law of Charge).
 
 ##### 1. Establish all mutual capacities with ```setMutualCapacities()```
-Applying ```capacityOfRings()``` for all pairs of rings.
+Applying ```capacityOfRings()``` for all pairs of ```ring```s.
 
-##### 2. Charges from potentials with .U2Q()
-1. to close the loop, set the last ```ring``` of ```Ringtrain``` as identical to the first.
-2. electrically, the rings are modelled as nodes with *given potentials*: V<sub>i</sub>. Thus ```ring[1]``` has potential V<sub>1</sub>,  ..., ```ring[n]``` has potential V<sub>n</sub>.\
-These nodes all are connected via capacitances C<sub>ij</sub> = C<sub>ji</sub> in parallel.\
+##### 2. Charges from potentials with U2Q()
+1. To close the loop, set the last ```ring``` of ```Ringtrain``` as identical to the first.
+2. electrically, the rings are modelled as nodes with *given potentials*: V<sub>i</sub>.\
+Thus ```ring[1]``` has potential V<sub>1</sub>,  ..., ```ring[n]``` has potential V<sub>n</sub>.\
+These nodes all are connected via capacitances in parallel C<sub>ij</sub> = C<sub>ji</sub>, in ```mutualCapacities```.\
 Mimic them as capacitors with two plates, charged with C<sub>ij</sub> &times; (V<sub>i</sub> - V<sub>j</sub>).
 3. *Assume* both plates have half of the capacitor's charge, opposite to each other's:\
 Q<sub>ij</sub> = 1/2 &times; C<sub>ij</sub> &times; (V<sub>i</sub> - V<sub>j</sub>)\
@@ -61,4 +61,9 @@ and\
 Q<sub>ji</sub> = 1/2 &times; C<sub>ji</sub> &times; (V<sub>j</sub> - V<sub>i</sub>).\
 Direction matters!\
 Then ```ring[i]``` will be charged in total with the sum of all Q<sub>ij</sub>.
-4. Returns check whether all their ```electrics.charge```s add up to zero.
+4. Returns checksum whether all their ```electrics.charge```s add up to zero.
+
+#### Wrap it all up
+```Ringtrain```'s method ```pointField()``` wrapps it all up,\
+sums all ```ringfield```s in ```superpose()```,\
+and returns a resulting electric field vector in any X, Y, Z=0.
