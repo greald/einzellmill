@@ -30,16 +30,17 @@ A ```Ring``` in  ```Ringtrain``` has
 The ring's ```electrics.charge``` is thought to be split in ```N```=24 point charges spread evenly over the rings circumference. ```N``` can be set globally. \
 For any x,y,z the ring's ```ringfield``` is the superposition of the E-fields of all of its ```N``` point charges.
 
-#### Capacities
+#### Capacitances
 The method ```capacityOfRings()``` invoking ```.Q2U()``` invoking ```potFromIncrEds()``` establishes the mutual relation between charge and potential ( = capacity) of all rings in play:
 - Applying <!--Laplace's specification of Poisson's rule:\
 ∇²V=0 in empty space => ∇V = constant locally.\
 But just using -->∇V = -E by definition,
 - summing ```ringfield```s along the path\
 from x on first ring to the other and (y = ringRadius, z = 0)
-- ```potFromIncrEds()``` sets the potential difference of rings from their given charges,
+- ```potFromIncrEds()``` sets the potential difference of rings given dummy charges,
 - optimised dynamically to required ```precision``` in ```Q2U()```, while minimizing the number of iterations.
-- Then ```capacityOfRings()``` returns the capacity from C=Q/V for any pair of ```ring```s.
+- Then ```capacityOfRings()``` returns the capacity from C=Q/V for any pair of ```ring```s\
+and ```setMutualCapacities()``` stores them all in Array ```mutualCapacities```.
 
 #### Charges from potentials
 In a set of rings with ```linephases``` from 0 to 1 (corresponding to 0 to 2&pi;)
@@ -64,6 +65,8 @@ Then ```ring[i]``` will be charged in total with the sum of all Q<sub>ij</sub>.
 4. Returns checksum whether all their ```electrics.charge```s add up to zero.
 
 #### Wrap it all up
-```Ringtrain```'s method ```pointField()``` wrapps it all up,\
-sums all ```ringfield```s in ```superpose()```,\
+```Ringtrain```'s method ```pointField()``` wrapps it all up,
+1. setting all mutual capacitances from dummy charges, in ```setMutualCapacities()```;
+2. applying them to have ```U2Q()``` set the rings' charges from externally given potentials;
+3. sums all ```ringfield```s in ```superpose()```;\
 and returns a resulting electric field vector in any X, Y, Z=0.
