@@ -1,3 +1,4 @@
+[!NOTE]status of this document: work in progress.
 # einzellmill
 ## numerical simulation for moving einzell lens field
 The simulation set up is a series of parallel conducting rings.
