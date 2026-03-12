@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">		
+	  <style>
+	    *{
+	      font-family: monospace;
+	      font-size: 4vh;
+	    }
+	    body{
+	    	background-color: #448899;
+	    	}
+			table {border:1px solid #000000; background-color: #ffffff;}
+			th    {border:2px solid #000000}
+			td    {border:1px solid #cccccc}
+			th,td{padding:1em;}
+		</style>
+		<title>einzellmill</title>
+	</head>
+	<body>
+		<canvas id="plus" width=100% height=15%
+			style="border:1px solid #d3d3d3; margin:1vw":>
+			Your browser does not support the canvas element.
+		</canvas>
+		<style>
+			.bediening{display: flex; flex-direction: column;}
+			.bediening > .c1 { }
+			.bediening > .c2 { align-self: center;}
+			.bediening > .c3 { align-self: flex-end; }
+		</style>
+		<div class="bediening">
+			<div>time cycle steps
+			</div><div class="c2"><input id="tcs" value="60">
+			</div><div class="c3">
+				<input type="button" value="vacuum" onclick="handling.vacuum();">
+			</div></div>
+		<div class="bediening">
+			<div>x position (0 to 1000)
+			</div><div class="c2"><input id="ppx">
+			</div><div>
+		</div></div class="c3">
+		<div class="bediening">
+			<div>y position (0 to 1000)
+			</div><div class="c2"><input id="ppy">
+			</div><div class="c3">
+				<input type="button" value="start" onclick="
+				handling.start();">
+				<input type="button" value="next" onclick="
+					let stat = document.getElementById('stat').innerHTML; 
+					let laatst = handling.next(); laatst = laatst == '' ? stat : laatst;
+					document.getElementById('stat').innerHTML = laatst">
+			</div></div>
+		<div id="stat">laatste stat</div>
+		
+		<hr>
+		<div class="bediening">
+			<div><input id="experiments" value="10"></div>
+			<div class="c2"> particles thrown in at random
+			</div><div class="c3">
+				<input type="button" value="repeat"
+					onclick="document.getElementById('stats').innerHTML =
+					handling.repeat(document.getElementById('experiments').value);">
+		</div></div>
+		<div id="stats">meer stats</div>
+		
+		<hr>
+		<div class="bediening"><div class="c1"></div><div class="c2">
+			</div><div class="c3">
+			<input type="button" value="reset" onclick="alert('later')">
+			</div></div>
+			
+		<hr>
+		<div id="cap"></div>
+		
+		<script src="https://ghvernuft.nl/os/tolerance.js"></script>
+		<script src="calibration.js" ></script>
+		<script src="ringNfield.js"></script>
+		<script src="grid.js"></script>
+		<script src="particle.js"></script>
+		<script>
+		
+		var ring0 = new Ring(0,             0,0, 0);    //console.log(ring0);
+		var ring1 = new Ring(  ringAfstand, 0,0, 1/3);  //console.log(ring1);
+		var ring2 = new Ring(2*ringAfstand, 0,0, 2/3);  //console.log(ring2);
+		var ring3 = new Ring(3*ringAfstand, 0,0, 1);    //console.log(ring3);
+		
+		var ringtrain = new Ringtrain([ring0,ring1,ring2,ring3]);
+		
+		document.getElementById('cap').innerHTML  = ringtrain.viewMutualCapacities(); 
+		
+		var cyclephase = 0;
+		ringtrain.rollPotentials(cyclephase);
+		
+		console.log(["ringtrain ", ringtrain]);
+  	var grid = new Grid( 3*ringAfstand, ringRadius );
+		var cnv = new Canvas( "plus", grid ); 
+		cnv.resize();
+  	cnv.rectangle("#ABCDEF");
+		cnv.eVectors( ringtrain );
+		for( let rinx = 0; rinx < ringtrain.rings.length; rinx++ )
+		{
+			cnv.balloon( ringtrain.rings[rinx] );
+		}
+		var plusparticle = new Plusparticle( 1.5*ringAfstand, .5*ringRadius, 0, 0, 0, 0 );
+		
+		var handling = new Handling();
+		</script>
+	</body>
+</html>
