@@ -35,20 +35,16 @@ if(typeof littleEnough != "function")
 
 class Ring // (cx,cy,cz,linephase)
 {// static electrical field of one ring
-	
-	#NOMINALPOTENTIAL;
-	
 	constructor(cx,cy,cz, linephase)
 	{
-		this.#NOMINALPOTENTIAL = 30000; // V
 		// calculations
 		this.ringsegments = window.N >0 ? window.N : 24;
+		this.linephase = linephase; // Number between 0 and 1, corresponding to 0 to 2π in the electrical linephase
 		
 		// geometrics
 		this.cx = cx;               // x-coordinate of center of Ring
 		this.cy = 0; 				        // y-coordinate of center of Ring
 		this.cz = 0;                // z-coordinate of center of Ring
-		this.linephase = linephase; // Number between 0 and 1, corresponding to 0 to 2π in the electrical linephase
 		this.metrics = {ringRadius: 0.015, draadstraal: .001};
 		
 		// electrics
@@ -58,7 +54,9 @@ class Ring // (cx,cy,cz,linephase)
 			charge: Math.cos(2*Math.PI*this.linephase) * epsilon0 
 			}
 	}
-	static get TOPPOTENTIAL(){ return this.#NOMINALPOTENTIAL * Math.sqrt(2); }
+	static get TOPPOTENTIAL(){ return 30000 * Math.sqrt(2); }
+	
+	phase( cyclephase=0 ) { return this.linephase + cyclephase; }
 	
 	segmentfield(sgm, x,y,z)
 	{
@@ -160,12 +158,12 @@ class Ringtrain // (rings)
 		
 		while( delta > this.precision)
 		{
-			console.log("increments "+(path/step).toFixed(0));
+//		console.log("increments "+(path/step).toFixed(0));
 			
 			pot = this.potFromIncrEds(rinx1, rinx2, step);
 			
 			potx = pot.at(-1);
-			delta = Math.abs((potx - pot[0] - potdiff)/(potx - pot[0])); console.log("delta "+delta.toPrecision(4));
+			delta = Math.abs((potx - pot[0] - potdiff)/(potx - pot[0])); // console.log("delta "+delta.toPrecision(4));
 			potdiff = potx - pot[0];
 			step = step / 2; // closer approximation
 		}
@@ -258,7 +256,7 @@ class Ringtrain // (rings)
 		return "<table>"+"<caption>"+
 		"<h2>Capacity of rings[i][j]</h2>"+
 		"<h3>"+(uC*1e12).toPrecision(3)+" pF = 1"+"</h3>"+
-		"path = "+ (1/this.precision) +" steps"+
+		"iterated until precision over "+ (this.precision) +
 		"</caption>"+rows+"</table>";
 	}	
 	
@@ -273,7 +271,7 @@ class Ringtrain // (rings)
 			
 			defpots.push(this.rings[ri].electrics.potential);
 		}
-  	console.log(defpots);
+//	console.log(defpots);
 	}
 	U2Q( existingpotentials = false )
 	{
@@ -291,7 +289,7 @@ class Ringtrain // (rings)
 				// // direction matters for rings.electrics.potential! +- goes from higher to lower index
 				this.rings[i].electrics.charge += C==null 
 					? 0 
-					: C/2*( this.rings[j].electrics.potential-this.rings[i].electrics.potential ); 
+					: C/2*( this.rings[j].electrics.potential - this.rings[i].electrics.potential ); 
 			}
 			// for validity checkup
 			totQ += this.rings[i].electrics.charge; // should be zero
@@ -317,16 +315,26 @@ class Ringtrain // (rings)
 		return Efieldvector;
 	}
 	
-	run( X,Y )
+	pointField(X,Y)
 	{
 		if( ! (Array.isArray(this.mutualCapacities)
 		&& this.mutualCapacities.length == this.rings.length) )
 		{
 			this.setMutualCapacities();
 		}
-		this.U2Q();
+		let zero = this.U2Q(true);
+		// console.log("potentials are valid if zero = " + zero);
 		return this.superpose(X,Y,0);
 	}
 	
-	pointField(X,Y){ return this.run( X,Y ); }
+	rollPotentials(cyclephase = 0)
+	{
+		for( let rinx = 0; rinx < this.rings.length; rinx++ )
+		{
+//		console.log("cyclephase "+cyclephase);
+			this.rings[rinx].electrics.potential = 
+				Ring.TOPPOTENTIAL * 
+				Math.sin(this.rings[rinx].phase( cyclephase )*2*Math.PI);
+		}
+	}
 }
