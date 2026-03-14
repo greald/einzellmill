@@ -25,15 +25,71 @@
 		<style>
 			.bediening{display: flex; flex-direction: column;}
 			.bediening > .c1 { }
-			.bediening > .c2 { align-self: center;}
+			.bediening > .c2 { margin-left:30%; /*align-self: center;*/}
 			.bediening > .c3 { align-self: flex-end; }
 		</style>
+		<h3>presettings (<a href="javascript:;" onclick="document.getElementById('presettings').toggleAttribute('hidden')">more / less</a>)</h3>
+		<div id="presettings" hidden>
+		<div class="bediening">		
+			<div>ring radius
+			</div><div class="c2"><input value="0.015"
+			onchange="ringRadius = this.value;"> m
+			</div><!--div class="c3"></div-->
+			
+			<div>ring spacing
+			</div><div class="c2"><input value="0.03"
+			onchange="ringAfstand = this.value / Math.sqrt(2);"> m
+			</div><!--div class="c3"></div-->
+			
+			<div>ring wire cross section
+			</div><div class="c2"><input value="0.001"
+			onchange="draadstraal = this.value;"> m
+			</div><!--div class="c3"></div-->
+			
+			<div>nominal potential
+			</div><div class="c2"><input value="30000"
+			onchange="topSpanning = this.value / Math.sqrt(2);"> V
+			</div><!--div class="c3"></div-->
+
+			<div>frequency
+			</div><div class="c2"><input value="10000000"
+			onchange="fullcycletime = 1 / this.value;"> Hz
+			</div><!--div class="c3"></div-->
+			
+			<!-- mass:1.673e-27, charge:1.602e-18 -->
+			<div>particle mass
+			</div><div class="c2"><input value="1.673e-27"
+			onchange="plusparticle.physics.mass = this.value;"> kg (proton mass)
+			</div><!--div class="c3"></div-->
+			
+			<div>particle charge
+			</div><div class="c2"><input value="1.602e-18"
+			onchange="plusparticle.physics.charge = this.value;"> C (proton charge)
+			</div><!--div class="c3"></div-->
+			
+			<div>ringsegments
+			</div><div class="c2"><input value="24"
+			onchange="for(rinx = 0; rinx<ringtrain.rings.length; rinx++)
+			{ringtrain.rings[rinx].ringsegments = this.value;}">
+			</div><!--div class="c3"></div-->
+			
+			<div>precision
+			</div><div class="c2"><input value="0.001"
+			onchange="ringtrain.precision = this.value;}">
+			</div><!--div class="c3"></div-->
+		</div>
+		<hr>	
+		</div>
 		<div class="bediening">
-			<div>time cycle steps
-			</div><div class="c2"><input id="tcs" value="60">
+			<div>time cycle steps <a href="javascript:;" onclick="document.getElementById('explanation').toggleAttribute('hidden')">(?!)</a>
+			</div><div class="c2"><input id="tcs" value="60"> steps / cycle
+			 <div id="explanation" hidden >= delta t<br/>= 1/(frequency &times; these steps)<br/>= the time steps after which<br/>the static field is calculated,<br/>and the movement of the particle</div>
 			</div><div class="c3">
 				<input type="button" value="vacuum" onclick="handling.vacuum();">
-			</div></div>
+			</div>
+			
+		</div>
+			<hr>
 		<div class="bediening">
 			<div>x position (0 to 1000)
 			</div><div class="c2"><input id="ppx">
@@ -104,6 +160,7 @@
 		var plusparticle = new Plusparticle( 1.5*ringAfstand, .5*ringRadius, 0, 0, 0, 0 );
 		
 		var handling = new Handling();
+		
 		</script>
 	</body>
 </html>
