@@ -1,5 +1,5 @@
-[!NOTE]
-status of this document: work in progress.
+> [!NOTE]
+> status of this document: work in progress. This docu is lagging behind published code.
 
 # einzellmill
 ## numerical simulation for moving einzell lens field
